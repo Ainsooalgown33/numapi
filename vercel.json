@@ -8,8 +8,9 @@
     ],
     "routes": [
       {
-        "src": "/(.*)",
-        "dest": "app.py"
+        "src": "/api/(.*)",
+        "dest": "numapi.py"
       }
     ]
   }
+  
