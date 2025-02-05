@@ -71,14 +71,17 @@ async def fetch_fun_fact(number: int) -> str:
         return "No fun fact available."
 
 @app.get("/api/classify-number")
-async def classify_number(number: int = Query(..., description="The number to classify")):
-    if not isinstance(number, int):
-        raise HTTPException(status_code=400, detail={"number": str(number), "error": True})
+async def classify_number(number: str = Query(..., description="The number to classify")):
+    try:
+        number_int = int(number)  # Try to convert the input to an integer
+    except ValueError:
+        # Return 400 Bad Request for invalid input
+        return {"number": number, "error": True}
 
     # Run computations concurrently
     properties = []
-    is_armstrong_result = is_armstrong(number)
-    is_even = number % 2 == 0
+    is_armstrong_result = is_armstrong(number_int)
+    is_even = number_int % 2 == 0
 
     if is_armstrong_result:
         properties.append("armstrong")
@@ -88,13 +91,13 @@ async def classify_number(number: int = Query(..., description="The number to cl
         properties.append("odd")
 
     # Fetch fun fact asynchronously
-    fun_fact = await fetch_fun_fact(number)
+    fun_fact = await fetch_fun_fact(number_int)
 
     return {
-        "number": number,
-        "is_prime": is_prime(number),
-        "is_perfect": is_perfect(number),
+        "number": number_int,
+        "is_prime": is_prime(number_int),
+        "is_perfect": is_perfect(number_int),
         "properties": properties,
-        "digit_sum": digit_sum(number),
+        "digit_sum": digit_sum(number_int),
         "fun_fact": fun_fact,
     }
