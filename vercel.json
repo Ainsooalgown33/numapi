@@ -1,10 +1,15 @@
 {
     "version": 2,
     "builds": [
-      { "src": "numapi.py", "use": "@vercel/python" }
+      {
+        "src": "numapi.py",
+        "use": "@vercel/python"
+      }
     ],
     "routes": [
-      { "src": "/api/(.*)", "dest": "numapi.py" }
+      {
+        "src": "/(.*)",
+        "dest": "numapi.py"
+      }
     ]
   }
-  
