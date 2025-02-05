@@ -1,13 +1,7 @@
-from flask import Flask, jsonify
-from flask_cors import CORS  # Import CORS
+from flask import Flask, request, jsonify
 import requests
-import random
 
-# Define the Flask app
 app = Flask(__name__)
-
-# Enable CORS for the app
-CORS(app)
 
 # Function to check if a number is prime
 def is_prime(n):
@@ -35,7 +29,7 @@ def is_armstrong(n):
 def digit_sum(n):
     return sum(int(d) for d in str(n))
 
-# Function to get a fun fact about the number (using Numbers API)
+# Function to get a fun fact about the number
 def get_fun_fact(n):
     url = f"http://numbersapi.com/{n}/math"
     response = requests.get(url)
@@ -43,8 +37,16 @@ def get_fun_fact(n):
 
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
-    # Generate a random number between 1 and 1000
-    number = random.randint(1, 1000)
+    number = request.args.get('number')
+    
+    # Input validation
+    if not number or not number.lstrip('-').isdigit():
+        return jsonify({
+            "number": number,
+            "error": True
+        }), 400
+    
+    number = int(number)
     
     # Determine properties
     properties = []
