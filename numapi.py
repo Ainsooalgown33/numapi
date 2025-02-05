@@ -1,8 +1,13 @@
 from flask import Flask, jsonify
+from flask_cors import CORS  # Import CORS
 import requests
 import random
 
+# Define the Flask app
 app = Flask(__name__)
+
+# Enable CORS for the app
+CORS(app)
 
 # Function to check if a number is prime
 def is_prime(n):
