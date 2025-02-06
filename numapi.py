@@ -1,103 +1,59 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import requests
-import asyncio
-from functools import lru_cache
 
 app = FastAPI()
 
 # Enable CORS
-from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Cache for fun facts to reduce external API calls
-FUN_FACT_CACHE = {}
-
-@lru_cache(maxsize=1000)  # Cache results for faster repeated requests
 def is_prime(n: int) -> bool:
-    """Check if a number is prime."""
     if n < 2:
         return False
-    if n in (2, 3):
-        return True
-    if n % 2 == 0 or n % 3 == 0:
-        return False
-    i = 5
-    while i * i <= n:
-        if n % i == 0 or n % (i + 2) == 0:
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
             return False
-        i += 6
     return True
 
-@lru_cache(maxsize=1000)  # Cache results for faster repeated requests
 def is_perfect(n: int) -> bool:
-    """Check if a number is perfect."""
-    if n < 2:
-        return False
-    divisors = {1}
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0:
-            divisors.add(i)
-            divisors.add(n // i)
-    return sum(divisors) == n
+    return n > 0 and sum(i for i in range(1, n) if n % i == 0) == n
 
-@lru_cache(maxsize=1000)  # Cache results for faster repeated requests
 def is_armstrong(n: int) -> bool:
-    """Check if a number is an Armstrong number."""
     digits = [int(d) for d in str(n)]
-    length = len(digits)
-    return sum(d ** length for d in digits) == n
+    return sum(d ** len(digits) for d in digits) == n
 
-@lru_cache(maxsize=1000)  # Cache results for faster repeated requests
-def digit_sum(n: int) -> int:
-    """Calculate the sum of the digits of a number."""
+def get_digit_sum(n: int) -> int:
     return sum(int(d) for d in str(n))
 
-async def fetch_fun_fact(number: int) -> str:
-    """Fetch fun fact from Numbers API asynchronously."""
-    if number in FUN_FACT_CACHE:
-        return FUN_FACT_CACHE[number]
-
+def get_fun_fact(n: int) -> str:
     try:
-        response = await asyncio.to_thread(requests.get, f"http://numbersapi.com/{number}/math?json")
-        fun_fact = response.json().get("text", "No fun fact available.")
-        FUN_FACT_CACHE[number] = fun_fact  # Cache the result
-        return fun_fact
+        response = requests.get(f"http://numbersapi.com/{n}/math", timeout=3)
+        return response.text if response.status_code == 200 else "No fun fact available."
     except requests.RequestException:
         return "No fun fact available."
 
 @app.get("/api/classify-number")
-async def classify_number(number: str = Query(..., description="The number to classify")):
-    try:
-        number_int = int(number)  # Try to convert the input to an integer
-    except ValueError:
-        # Return 400 Bad Request for invalid input
-        return {"number": number, "error": True}
-
-    # Run computations concurrently
+def classify_number(number: str):
+    if not number.isdigit():
+        raise HTTPException(status_code=400, detail={"number": number, "error": True})
+    
+    num = int(number)
     properties = []
-    is_armstrong_result = is_armstrong(number_int)
-    is_even = number_int % 2 == 0
-
-    if is_armstrong_result:
+    if is_armstrong(num):
         properties.append("armstrong")
-    if is_even:
-        properties.append("even")
-    else:
-        properties.append("odd")
-
-    # Fetch fun fact asynchronously
-    fun_fact = await fetch_fun_fact(number_int)
-
+    properties.append("odd" if num % 2 else "even")
+    
     return {
-        "number": number_int,
-        "is_prime": is_prime(number_int),
-        "is_perfect": is_perfect(number_int),
+        "number": num,
+        "is_prime": is_prime(num),
+        "is_perfect": is_perfect(num),
         "properties": properties,
-        "digit_sum": digit_sum(number_int),
-        "fun_fact": fun_fact,
+        "digit_sum": get_digit_sum(num),
+        "fun_fact": get_fun_fact(num)
     }
