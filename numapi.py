@@ -49,6 +49,15 @@ def get_fun_fact(n):
         app.logger.error(f"Error fetching fun fact: {e}")
         return "No fun fact available."
 
+# Root route
+@app.route('/')
+def home():
+    """Root route to handle requests to the base URL."""
+    return jsonify({
+        "message": "Welcome to the Number Classification API!",
+        "usage": "Use /api/classify-number?number=<number> to classify a number."
+    })
+
 # API endpoint
 @app.route('/api/classify-number', methods=['GET'])
 def classify_number():
