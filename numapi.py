@@ -53,16 +53,26 @@ def get_fun_fact(n):
 @app.route('/')
 def home():
     """Root route to handle requests to the base URL."""
-    # Get the number from query parameters, default to 2 if not provided
-    number = request.args.get('number', default=2, type=int)
+    # Get the number from query parameters
+    number = request.args.get('number')
     app.logger.debug(f"Received request with number: {number}")
+
+    # Input validation
+    if not number:
+        # Default to 2 if no number is provided
+        number = 2
+    else:
+        # Check if the input is a valid integer
+        try:
+            number = int(number)
+        except ValueError:
+            return jsonify({
+                "number": number,
+                "error": True
+            }), 400
 
     # Calculate properties for the number
     properties = []
-    if is_prime(abs(number)):  # Handle negative numbers
-        properties.append("prime")
-    if is_perfect(abs(number)):  # Handle negative numbers
-        properties.append("perfect")
     if is_armstrong(number):
         properties.append("armstrong")
     if number % 2 == 0:
@@ -81,57 +91,6 @@ def home():
     }
 
     return jsonify(response)
-
-# API endpoint
-@app.route('/api/classify-number', methods=['GET'])
-def classify_number():
-    """Classify a number and return its properties."""
-    number = request.args.get('number')
-    app.logger.debug(f"Received request with number: {number}")
-
-    # Input validation
-    if not number:
-        app.logger.error("Missing 'number' parameter")
-        return jsonify({
-            "number": "null",
-            "error": True
-        }), 400
-
-    # Check if the input is a valid integer
-    try:
-        number = int(number)
-    except ValueError:
-        app.logger.error(f"Invalid input: {number}")
-        return jsonify({
-            "number": number,
-            "error": True
-        }), 400
-
-    # Calculate properties
-    properties = []
-    if is_prime(abs(number)):  # Handle negative numbers
-        properties.append("prime")
-    if is_perfect(abs(number)):  # Handle negative numbers
-        properties.append("perfect")
-    if is_armstrong(number):
-        properties.append("armstrong")
-    if number % 2 == 0:
-        properties.append("even")
-    else:
-        properties.append("odd")
-
-    # Prepare response
-    response = {
-        "number": number,
-        "is_prime": is_prime(abs(number)),  # Handle negative numbers
-        "is_perfect": is_perfect(abs(number)),  # Handle negative numbers
-        "properties": properties,
-        "digit_sum": digit_sum(number),
-        "fun_fact": get_fun_fact(number)
-    }
-
-    app.logger.debug(f"Returning response: {response}")
-    return jsonify(response), 200
 
 # Run the app
 if __name__ == '__main__':
