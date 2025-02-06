@@ -28,13 +28,13 @@ def is_perfect(n):
 
 def is_armstrong(n):
     """Check if a number is an Armstrong number."""
-    digits = [int(d) for d in str(n)]
+    digits = [int(d) for d in str(abs(n))]  # Handle negative numbers
     length = len(digits)
-    return sum(d ** length for d in digits) == n
+    return sum(d ** length for d in digits) == abs(n)
 
 def digit_sum(n):
     """Calculate the sum of the digits of a number."""
-    return sum(int(d) for d in str(n))
+    return sum(int(d) for d in str(abs(n)))  # Handle negative numbers
 
 def get_fun_fact(n):
     """Fetch a fun fact about the number from numbersapi.com."""
@@ -53,15 +53,15 @@ def get_fun_fact(n):
 @app.route('/')
 def home():
     """Root route to handle requests to the base URL."""
-    # Default number to classify if no number is provided
-    default_number = 2
-    number = default_number
+    # Get the number from query parameters, default to 2 if not provided
+    number = request.args.get('number', default=2, type=int)
+    app.logger.debug(f"Received request with number: {number}")
 
-    # Calculate properties for the default number
+    # Calculate properties for the number
     properties = []
-    if is_prime(number):
+    if is_prime(abs(number)):  # Handle negative numbers
         properties.append("prime")
-    if is_perfect(number):
+    if is_perfect(abs(number)):  # Handle negative numbers
         properties.append("perfect")
     if is_armstrong(number):
         properties.append("armstrong")
@@ -73,8 +73,8 @@ def home():
     # Prepare response
     response = {
         "number": number,
-        "is_prime": is_prime(number),
-        "is_perfect": is_perfect(number),
+        "is_prime": is_prime(abs(number)),  # Handle negative numbers
+        "is_perfect": is_perfect(abs(number)),  # Handle negative numbers
         "properties": properties,
         "digit_sum": digit_sum(number),
         "fun_fact": get_fun_fact(number)
@@ -109,9 +109,9 @@ def classify_number():
 
     # Calculate properties
     properties = []
-    if is_prime(number):
+    if is_prime(abs(number)):  # Handle negative numbers
         properties.append("prime")
-    if is_perfect(number):
+    if is_perfect(abs(number)):  # Handle negative numbers
         properties.append("perfect")
     if is_armstrong(number):
         properties.append("armstrong")
@@ -123,8 +123,8 @@ def classify_number():
     # Prepare response
     response = {
         "number": number,
-        "is_prime": is_prime(number),
-        "is_perfect": is_perfect(number),
+        "is_prime": is_prime(abs(number)),  # Handle negative numbers
+        "is_perfect": is_perfect(abs(number)),  # Handle negative numbers
         "properties": properties,
         "digit_sum": digit_sum(number),
         "fun_fact": get_fun_fact(number)
