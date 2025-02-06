@@ -33,17 +33,19 @@ def get_digit_sum(n: int) -> int:
 
 def get_fun_fact(n: int) -> str:
     try:
-        response = requests.get(f"http://numbersapi.com/{n}/math", timeout=3)
-        return response.text if response.status_code == 200 else "No fun fact available."
+        response = requests.get(f"http://numbersapi.com/{n}/math?json", timeout=3)
+        data = response.json()
+        return data.get("text", "No fun fact available.")
     except requests.RequestException:
         return "No fun fact available."
 
 @app.get("/api/classify-number")
 def classify_number(number: str):
-    if not number.isdigit():
+    try:
+        num = int(number)
+    except ValueError:
         raise HTTPException(status_code=400, detail={"number": number, "error": True})
     
-    num = int(number)
     properties = []
     if is_armstrong(num):
         properties.append("armstrong")
