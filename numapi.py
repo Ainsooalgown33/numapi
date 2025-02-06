@@ -37,13 +37,20 @@ def classify_number():
     number = request.args.get('number')
     
     # Input validation
-    if not number or not number.lstrip('-').isdigit():
+    if not number:
         return jsonify({
-            "number": number if number else "null",
+            "number": "null",
             "error": True
         }), 400
     
-    number = int(number)
+    # Check if the input is a valid integer
+    try:
+        number = int(number)
+    except ValueError:
+        return jsonify({
+            "number": number,
+            "error": True
+        }), 400
     
     # Calculate properties
     properties = []
