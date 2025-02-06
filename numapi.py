@@ -54,7 +54,7 @@ def get_fun_fact(n):
 def home():
     """Root route to handle requests to the base URL."""
     # Default number to classify if no number is provided
-    default_number = 2
+    default_number = 6
     number = default_number
 
     # Calculate properties for the default number
