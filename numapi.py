@@ -53,10 +53,34 @@ def get_fun_fact(n):
 @app.route('/')
 def home():
     """Root route to handle requests to the base URL."""
-    return jsonify({
-        "message": "Welcome to the Number Classification API!",
-        "usage": "Use /api/classify-number?number=<number> to classify a number."
-    })
+    # Default number to classify if no number is provided
+    default_number = 2
+    number = default_number
+
+    # Calculate properties for the default number
+    properties = []
+    if is_prime(number):
+        properties.append("prime")
+    if is_perfect(number):
+        properties.append("perfect")
+    if is_armstrong(number):
+        properties.append("armstrong")
+    if number % 2 == 0:
+        properties.append("even")
+    else:
+        properties.append("odd")
+
+    # Prepare response
+    response = {
+        "number": number,
+        "is_prime": is_prime(number),
+        "is_perfect": is_perfect(number),
+        "properties": properties,
+        "digit_sum": digit_sum(number),
+        "fun_fact": get_fun_fact(number)
+    }
+
+    return jsonify(response)
 
 # API endpoint
 @app.route('/api/classify-number', methods=['GET'])
